@@ -101,6 +101,12 @@ class FinanceProvider extends ChangeNotifier {
         .fold(0, (sum, tx) => sum + tx.amount);
   }
 
+  List<Transaction> getTransactionsForMonth(int month, int year) {
+    return transactions
+        .where((tx) => tx.date.month == month && tx.date.year == year)
+        .toList();
+  }
+
   Map<int, Map<String, double>> getYearlyMonthlySummaries(int year) {
     final summaries = <int, Map<String, double>>{};
     for (int m = 1; m <= 12; m++) {
@@ -117,11 +123,63 @@ class FinanceProvider extends ChangeNotifier {
     return summaries;
   }
 
-  Map<String, double> getCategoryData(TransactionType type) {
+  Map<String, double> getCategoryData(TransactionType type, {int? month, int? year}) {
     final data = <String, double>{};
-    for (var tx in transactions.where((t) => t.type == type)) {
+    var filtered = transactions.where((t) => t.type == type);
+    if (month != null && year != null) {
+      filtered = filtered.where((t) => t.date.month == month && t.date.year == year);
+    }
+    for (var tx in filtered) {
       data[tx.category] = (data[tx.category] ?? 0) + tx.amount;
     }
     return data;
+  }
+
+  List<Map<String, dynamic>> getAllMonthlyFinancialHealth() {
+    final now = DateTime.now();
+    final monthKeys = <String>{'${now.year}-${now.month}'};
+
+    for (var tx in transactions) {
+      monthKeys.add('${tx.date.year}-${tx.date.month}');
+    }
+
+    final parsedMonths = monthKeys.map((key) {
+      final parts = key.split('-');
+      return {
+        'year': int.parse(parts[0]),
+        'month': int.parse(parts[1]),
+      };
+    }).toList();
+
+    // Sort descending by year, then by month
+    parsedMonths.sort((a, b) {
+      if (b['year'] != a['year']) {
+        return b['year']!.compareTo(a['year']!);
+      }
+      return b['month']!.compareTo(a['month']!);
+    });
+
+    final results = <Map<String, dynamic>>[];
+    for (var m in parsedMonths) {
+      final year = m['year']!;
+      final month = m['month']!;
+      final income = getMonthlyTotal(TransactionType.income, month, year);
+      final expense = getMonthlyTotal(TransactionType.expense, month, year);
+      final savings = income - expense;
+      final savingsRate = income > 0 ? (savings / income) * 100 : 0.0;
+      final isCurrent = (year == now.year && month == now.month);
+
+      results.add({
+        'year': year,
+        'month': month,
+        'income': income,
+        'expense': expense,
+        'savings': savings,
+        'savingsRate': savingsRate,
+        'isCurrentMonth': isCurrent,
+      });
+    }
+
+    return results;
   }
 }

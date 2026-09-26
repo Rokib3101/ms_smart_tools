@@ -174,10 +174,15 @@ class _PhysicsTabState extends State<_PhysicsTab> {
                 const Text('Converted Results:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
                 ..._results.entries.where((e) => e.key != _selectedUnit && units.containsKey(e.key)).map((e) => Card(
+                      elevation: 0,
                       margin: const EdgeInsets.only(bottom: 8),
-                      color: themeColor.withValues(alpha: 0.05),
+                      color: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(color: themeColor.withValues(alpha: 0.35), width: 1.2),
+                      ),
                       child: ListTile(
-                        title: Text(units[e.key] ?? e.key, style: const TextStyle(fontSize: 14)),
+                        title: Text(units[e.key] ?? e.key, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
                         trailing: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           reverse: true,

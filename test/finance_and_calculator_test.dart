@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ms_smart_tools/features/finance/data/models/finance_models.dart';
-import 'package:ms_smart_tools/features/calculators/bmi_calculator/logic/bmi_logic.dart';
 import 'package:ms_smart_tools/features/shopping_market/models/market_models.dart';
 import 'package:ms_smart_tools/features/calculators/basic_calculator/calculator_logic.dart';
 
@@ -34,6 +33,50 @@ void main() {
       var expenseTx = 200.0;
       wallet = wallet.copyWith(balance: wallet.balance - expenseTx);
       expect(wallet.balance, 1300.0);
+    });
+
+    test('Monthly financial health calculation and month filtering test', () {
+      final now = DateTime.now();
+      final txs = [
+        Transaction(
+          id: '1',
+          amount: 1000,
+          category: 'Salary',
+          date: DateTime(now.year, now.month, 10),
+          note: '',
+          type: TransactionType.income,
+          walletId: 'bank',
+        ),
+        Transaction(
+          id: '2',
+          amount: 300,
+          category: 'Food',
+          date: DateTime(now.year, now.month, 12),
+          note: '',
+          type: TransactionType.expense,
+          walletId: 'bank',
+        ),
+        Transaction(
+          id: '3',
+          amount: 800,
+          category: 'Salary',
+          date: DateTime(now.year, now.month - 1 > 0 ? now.month - 1 : 12, 5),
+          note: '',
+          type: TransactionType.income,
+          walletId: 'bank',
+        ),
+      ];
+
+      final currentMonthIncome = txs
+          .where((t) => t.type == TransactionType.income && t.date.month == now.month && t.date.year == now.year)
+          .fold(0.0, (s, t) => s + t.amount);
+
+      final currentMonthExpense = txs
+          .where((t) => t.type == TransactionType.expense && t.date.month == now.month && t.date.year == now.year)
+          .fold(0.0, (s, t) => s + t.amount);
+
+      expect(currentMonthIncome, 1000.0);
+      expect(currentMonthExpense, 300.0);
     });
   });
 

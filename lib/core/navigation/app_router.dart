@@ -6,6 +6,9 @@ import '../security/app_lock_guard.dart';
 // Dashboard & Core
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/dashboard/presentation/screens/privacy_policy_screen.dart';
+import '../../features/dashboard/presentation/screens/about_screen.dart';
+import '../../features/dashboard/presentation/screens/social_media_screen.dart';
+import '../../features/dashboard/presentation/screens/settings_screen.dart';
 
 // Finance
 import '../../features/finance/screens/finance_dashboard.dart';
@@ -47,6 +50,9 @@ import '../../features/image_tools/presentation/screens/image_overlay_screen.dar
 abstract class AppRoutes {
   static const String dashboard = '/';
   static const String privacyPolicy = '/privacy-policy';
+  static const String about = '/about';
+  static const String socialMedia = '/social-media';
+  static const String settings = '/settings';
 
   // Core Tools
   static const String finance = '/finance';
@@ -91,6 +97,18 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.privacyPolicy,
         builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.about,
+        builder: (context, state) => const AboutScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.socialMedia,
+        builder: (context, state) => const SocialMediaScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        builder: (context, state) => const SettingsScreen(),
       ),
 
       // Finance

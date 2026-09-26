@@ -5,9 +5,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Privacy & Permissions (প্রাইভেসি ও অনুমতি)'),
+        title: const Text('Privacy Policy'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -15,57 +17,93 @@ class PrivacyPolicyScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'আমাদের প্রাইভেসি পলিসি ও ডেটা সুরক্ষা',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+            Text(
+              'Privacy Policy & Data Security',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'MS Smart Tools অ্যাপটি আপনার গোপনীয়তা ও ডেটা সুরক্ষাকে সর্বোচ্চ অগ্রাধিকার দেয়। নিচে আমাদের ডেটা হ্যান্ডলিং এবং পারমিশন পলিসি বিস্তারিত দেওয়া হলো:',
-              style: TextStyle(fontSize: 14, height: 1.5),
+            Text(
+              'MS Smart Tools prioritizes your privacy and data security above all else. Below is our comprehensive data handling and permission policy:',
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.5,
+                color: theme.brightness == Brightness.dark
+                    ? Colors.grey.shade300
+                    : Colors.grey.shade800,
+              ),
             ),
             const SizedBox(height: 24),
 
             _buildSectionCard(
-              title: '১. ডেটা স্টোরেজ (Local vs Cloud)',
-              icon: Icons.storage,
+              context: context,
+              title: '1. Local Data Storage (Offline & Encrypted)',
+              icon: Icons.storage_outlined,
               content:
-                  '• লোকাল ডেটা (Local Data): আপনার সমস্ত ব্যক্তিগত হিসাব, স্ক্যান করা ডকুমেন্ট, শপিং লিস্ট এবং ফাইন্যান্স ডেটা সম্পূর্ণভাবে আপনার ডিভাইসের লোকাল এনক্রিপ্টেড ডাটাবেসে (Hive) সংরক্ষিত থাকে।\n• ক্লাউড ডেটা (Cloud Data): আমাদের কোনো ক্লাউড সার্ভারে আপনার কোনো ব্যক্তিগত ডেটা বা ডকুমেন্ট আপলোড করা হয় না। অ্যাপটি সম্পূর্ণ অফলাইন-প্রাইভেসি বজায় রেখে কাজ করে।',
+                  '• Local Data: All your financial records, wallets, transactions, scanned documents, shopping lists, and app preferences are stored strictly on your device using encrypted local storage (Hive).\n'
+                  '• Cloud Data: We do not upload or transmit any of your personal data, documents, or financial history to any cloud server or third party. The app functions completely offline to guarantee total privacy.',
             ),
 
             const SizedBox(height: 16),
 
             _buildSectionCard(
-              title: '২. পারমিশন পলিসি (Permissions)',
-              icon: Icons.security,
+              context: context,
+              title: '2. Permission Policy',
+              icon: Icons.security_outlined,
               content:
-                  'অ্যাপ ইনস্টল করার সঙ্গে সঙ্গে কোনো সেন্সিটিভ পারমিশন চাওয়া হয় না। শুধুমাত্র যখন আপনি নির্দিষ্ট ফিচার ব্যবহার করবেন, তখনই অনুমতি চাওয়া হবে:\n\n'
-                  '• ক্যামেরা (Camera): QR Scanner বা Document Scanner ব্যবহার করার সময় ক্যামেরার অনুমতি চাওয়া হয়।\n'
-                  '• ফটো/গ্যালারি (Gallery / Photos): গ্যালারি থেকে ছবি বা ডকুমেন্ট সিলেক্ট করার সময় অনুমতি চাওয়া হয়।\n'
-                  '• অপ্রয়োজনীয় ব্রড স্টোরেজ পারমিশন এড়িয়ে চলা হয়েছে।',
+                  'No sensitive permissions are requested upon app installation. Permissions are requested dynamically only when you access specific features:\n\n'
+                  '• Camera: Required when utilizing the QR Code Scanner or Document Scanner.\n'
+                  '• Photo Gallery: Required when importing images or documents from your device gallery for scanning or photo editing.\n'
+                  '• Broad or unnecessary storage permissions are strictly avoided to keep your system safe.',
             ),
 
             const SizedBox(height: 16),
 
             _buildSectionCard(
-              title: '৩. ডেটা এক্সপোর্ট ও ডিলিট (Export & Delete)',
-              icon: Icons.download_done,
+              context: context,
+              title: '3. Data Export & Erasure',
+              icon: Icons.download_done_outlined,
               content:
-                  '• ডেটা এক্সপোর্ট: ব্যবহারকারী চাইলে ফাইন্যান্স বা অন্যান্য ডেটা JSON বা CSV ফরম্যাটে এক্সপোর্ট করতে পারবেন।\n'
-                  '• ডেটা ডিলিট: ব্যবহারকারী যেকোনো সময় ট্র্যাশ থেকে বা স্থায়ীভাবে নিজের ডেটা মুছে ফেলতে পারবেন বা রিসেট করতে পারবেন।',
+                  '• Data Export: You can export your financial reports and records in JSON or CSV format whenever you choose.\n'
+                  '• Data Erasure: You retain full authority to clear trashed items, permanently delete specific records, or perform a full app data reset at any time.',
             ),
+
+            const SizedBox(height: 16),
+
+            _buildSectionCard(
+              context: context,
+              title: '4. Third-Party Services & Analytics',
+              icon: Icons.verified_user_outlined,
+              content:
+                  '• Zero Tracking: MS Smart Tools contains no third-party tracking, user analytics SDKs, or advertising networks that collect or profile user information.',
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSectionCard({required String title, required IconData icon, required String content}) {
+  Widget _buildSectionCard({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required String content,
+  }) {
+    final theme = Theme.of(context);
+
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.shade300),
+        side: BorderSide(
+          color: theme.brightness == Brightness.dark
+              ? Colors.grey.shade800
+              : Colors.grey.shade300,
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -74,13 +112,27 @@ class PrivacyPolicyScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, color: Colors.deepPurple),
+                Icon(icon, color: theme.colorScheme.primary),
                 const SizedBox(width: 10),
-                Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),
-            Text(content, style: TextStyle(fontSize: 13, height: 1.5, color: Colors.grey.shade700)),
+            Text(
+              content,
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.5,
+                color: theme.brightness == Brightness.dark
+                    ? Colors.grey.shade300
+                    : Colors.grey.shade700,
+              ),
+            ),
           ],
         ),
       ),

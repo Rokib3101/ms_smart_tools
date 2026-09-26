@@ -16,6 +16,11 @@ class FinanceDashboard extends StatelessWidget {
     final now = DateTime.now();
     final monthlyIncome = provider.getMonthlyTotal(TransactionType.income, now.month, now.year);
     final monthlyExpense = provider.getMonthlyTotal(TransactionType.expense, now.month, now.year);
+    final currentMonthCategoryData = provider.getCategoryData(
+      TransactionType.expense,
+      month: now.month,
+      year: now.year,
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -51,7 +56,7 @@ class FinanceDashboard extends StatelessWidget {
             const SizedBox(height: 24),
             _buildQuickActions(context),
             const SizedBox(height: 24),
-            if (provider.getCategoryData(TransactionType.expense).isNotEmpty) ...[
+            if (currentMonthCategoryData.isNotEmpty) ...[
               _buildSectionHeader('Expense Analysis', Icons.pie_chart),
               const SizedBox(height: 12),
               _buildExpenseChart(context, provider),
@@ -243,8 +248,17 @@ class FinanceDashboard extends StatelessWidget {
   }
 
   Widget _buildExpenseChart(BuildContext context, FinanceProvider provider) {
-    final categoryData = provider.getCategoryData(TransactionType.expense);
-    final totalExpense = provider.getMonthlyTotal(TransactionType.expense, DateTime.now().month, DateTime.now().year);
+    final now = DateTime.now();
+    final categoryData = provider.getCategoryData(
+      TransactionType.expense,
+      month: now.month,
+      year: now.year,
+    );
+    final totalExpense = provider.getMonthlyTotal(
+      TransactionType.expense,
+      now.month,
+      now.year,
+    );
 
     if (categoryData.isEmpty || totalExpense == 0) {
       return const SizedBox();
@@ -303,12 +317,15 @@ class FinanceDashboard extends StatelessWidget {
   }
 
   Widget _buildRecentTransactions(BuildContext context, FinanceProvider provider) {
-    final txs = provider.transactions.take(5).toList();
+    final now = DateTime.now();
+    final currentMonthTxs = provider.getTransactionsForMonth(now.month, now.year);
+    final txs = currentMonthTxs.take(5).toList();
+
     if (txs.isEmpty) {
       return const Card(
         child: Padding(
           padding: EdgeInsets.all(16),
-          child: Text('No transactions recorded yet.'),
+          child: Text('No transactions recorded this month.'),
         ),
       );
     }

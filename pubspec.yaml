@@ -1,6 +1,6 @@
 name: ms_smart_tools
 description: "MS Smart Tools"
-version: 1.6.3+63
+version: 1.6.5+65
 publish_to: 'none'
 
 environment:
