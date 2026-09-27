@@ -7,32 +7,25 @@ import 'package:gal/gal.dart';
 class StorageUtils {
   static Future<String> getAppOutputDir() async {
     if (Platform.isAndroid) {
-      // For Android 13+ (API 33), we need different permissions
-      if (await Permission.photos.request().isGranted || await Permission.storage.request().isGranted) {
-         try {
-          final extDir = await getExternalStorageDirectory();
-          if (extDir != null && extDir.path.contains('/Android/data/')) {
-            final rootPath = extDir.path.split('/Android/data/')[0];
-            final customPath = '$rootPath/MS Smart Tools';
-            final dir = Directory(customPath);
-            if (!await dir.exists()) {
-              await dir.create(recursive: true);
-            }
-            return customPath;
+      try {
+        final extDir = await getExternalStorageDirectory();
+        if (extDir != null) {
+          final customPath = '${extDir.path}/MS Smart Tools';
+          final dir = Directory(customPath);
+          if (!await dir.exists()) {
+            await dir.create(recursive: true);
           }
-        } catch (_) {}
-      }
-      
-      final fallbackDir = Directory('/storage/emulated/0/MS Smart Tools');
-      if (!await fallbackDir.exists()) {
-        try {
-          await fallbackDir.create(recursive: true);
-        } catch (_) {
-           final docDir = await getApplicationDocumentsDirectory();
-           return docDir.path;
+          return customPath;
         }
+      } catch (_) {}
+
+      final docDir = await getApplicationDocumentsDirectory();
+      final customPath = '${docDir.path}/MS Smart Tools';
+      final dir = Directory(customPath);
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
       }
-      return fallbackDir.path;
+      return customPath;
     } else {
       final docDir = await getApplicationDocumentsDirectory();
       final customPath = '${docDir.path}/MS Smart Tools';
@@ -67,10 +60,15 @@ class StorageUtils {
         final outputDir = await getAppOutputDir();
         final targetPath = '$outputDir/$fileName';
         await sourceFile.copy(targetPath);
-        return targetPath;
+        final targetFile = File(targetPath);
+        if (await targetFile.exists() && await targetFile.length() > 0) {
+          return targetPath;
+        }
       } catch (e) {
-        return sourcePath;
+        print('Copy file error: $e');
       }
+
+      return sourcePath;
     } catch (e) {
       print('Save error: $e');
     }
@@ -85,6 +83,11 @@ class StorageUtils {
       final sourceFile = File(sourcePath);
       if (!await sourceFile.exists()) return null;
       final bytes = await sourceFile.readAsBytes();
+
+      if (bytes.isEmpty) {
+        print('Source file bytes are empty!');
+        return null;
+      }
 
       final ext = fileName.contains('.') ? fileName.split('.').last : '';
       String? savedPath;
@@ -103,12 +106,28 @@ class StorageUtils {
 
       if (savedPath != null && savedPath.isNotEmpty) {
         final savedFile = File(savedPath);
-        if (!await savedFile.exists() || (await savedFile.length()) == 0) {
-          await savedFile.writeAsBytes(bytes);
+        try {
+          if (!await savedFile.exists() || (await savedFile.length()) == 0) {
+            await savedFile.writeAsBytes(bytes, flush: true);
+          }
+        } catch (e) {
+          print('Write bytes error: $e');
         }
-        return savedPath;
+
+        // Verify if file actually contains data
+        if (await savedFile.exists() && await savedFile.length() > 0) {
+          return savedPath;
+        } else {
+          // If file is 0 KB, delete the corrupted empty placeholder
+          try {
+            if (await savedFile.exists()) {
+              await savedFile.delete();
+            }
+          } catch (_) {}
+        }
       }
 
+      // Fallback to custom app directory if FilePicker failed or created a 0 KB file
       return await saveFileToCustomFolder(sourcePath, fileName);
     } catch (e) {
       print('saveDocumentToStorage error: $e');

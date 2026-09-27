@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
-  static const String appVersion = '1.6.3';
-  static const String buildNumber = '63';
+  static const String appVersion = '1.6.8';
+  static const String buildNumber = '68';
   static const String githubRepoUrl = 'https://github.com/Rokib3101/ms_smart_tools';
 
   void _shareApp(BuildContext context) {
@@ -169,35 +170,43 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(height: 30),
 
             // App Version at Bottom
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: theme.brightness == Brightness.dark
-                    ? Colors.grey.shade900
-                    : Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.check_circle_outline,
-                    size: 16,
-                    color: theme.colorScheme.primary,
+            FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snapshot) {
+                final version = snapshot.data?.version ?? appVersion;
+                final build = snapshot.data?.buildNumber ?? buildNumber;
+
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: theme.brightness == Brightness.dark
+                        ? Colors.grey.shade900
+                        : Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'App Version: v$appVersion ($buildNumber)',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: theme.brightness == Brightness.dark
-                          ? Colors.grey.shade300
-                          : Colors.grey.shade800,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.check_circle_outline,
+                        size: 16,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'App Version: v$version ($build)',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: theme.brightness == Brightness.dark
+                              ? Colors.grey.shade300
+                              : Colors.grey.shade800,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
             const SizedBox(height: 12),
             Text(

@@ -68,7 +68,7 @@ class BackupRestoreService {
       final filePath = '${dir.path}/ms_smart_tools_backup_$dateStr.json';
 
       final file = File(filePath);
-      await file.writeAsString(jsonString);
+      await file.writeAsString(jsonString, flush: true);
 
       await StorageUtils.saveFileToCustomFolder(filePath, 'ms_smart_tools_backup_$dateStr.json');
       return filePath;
@@ -94,7 +94,7 @@ class BackupRestoreService {
       final filePath = '${dir.path}/ms_smart_tools_transactions_$dateStr.csv';
 
       final file = File(filePath);
-      await file.writeAsString(buffer.toString());
+      await file.writeAsString(buffer.toString(), flush: true);
 
       await StorageUtils.saveFileToCustomFolder(filePath, 'ms_smart_tools_transactions_$dateStr.csv');
       return filePath;
@@ -110,10 +110,24 @@ class BackupRestoreService {
       final file = File(filePath);
       if (!await file.exists()) return null;
 
-      final jsonString = await file.readAsString();
-      final Map<String, dynamic> data = jsonDecode(jsonString);
+      String jsonString;
+      try {
+        jsonString = await file.readAsString();
+      } catch (_) {
+        final bytes = await file.readAsBytes();
+        jsonString = utf8.decode(bytes, allowMalformed: true);
+      }
 
-      if (!data.containsKey('transactions') && !data.containsKey('wallets')) {
+      if (jsonString.startsWith('\uFEFF')) {
+        jsonString = jsonString.substring(1);
+      }
+      jsonString = jsonString.trim();
+
+      final decoded = jsonDecode(jsonString);
+      if (decoded is! Map) return null;
+      final Map<String, dynamic> data = Map<String, dynamic>.from(decoded);
+
+      if (!data.containsKey('transactions') && !data.containsKey('wallets') && !data.containsKey('categories')) {
         return null;
       }
 
@@ -169,8 +183,22 @@ class BackupRestoreService {
       final file = File(filePath);
       if (!await file.exists()) return false;
 
-      final jsonString = await file.readAsString();
-      final Map<String, dynamic> data = jsonDecode(jsonString);
+      String jsonString;
+      try {
+        jsonString = await file.readAsString();
+      } catch (_) {
+        final bytes = await file.readAsBytes();
+        jsonString = utf8.decode(bytes, allowMalformed: true);
+      }
+
+      if (jsonString.startsWith('\uFEFF')) {
+        jsonString = jsonString.substring(1);
+      }
+      jsonString = jsonString.trim();
+
+      final decoded = jsonDecode(jsonString);
+      if (decoded is! Map) return false;
+      final Map<String, dynamic> data = Map<String, dynamic>.from(decoded);
 
       final version = (data['version'] as int?) ?? 1;
 
