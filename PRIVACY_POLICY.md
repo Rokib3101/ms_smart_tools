@@ -1,6 +1,6 @@
 # Privacy Policy for MS Smart Tools
 
-**Effective Date:** January 1, 2025  
+**Effective Date:** January 1, 2026  
 **App Name:** MS Smart Tools  
 
 ---
@@ -71,5 +71,5 @@ We may update our Privacy Policy from time to time. We will notify you of any ch
 ## 7. Contact Us
 
 If you have any questions about this Privacy Policy, please contact us:
-- **Email:** support@mssmarttools.com *(Please update with your actual support email)*
-- **Website:** https://github.com/your-username/ms-smart-tools *(Please update with your published privacy policy link)*
+- **Telegram:** t.me/rokib3101
+- **Website:** https://github.com/Rokib3101/ms_smart_tools
