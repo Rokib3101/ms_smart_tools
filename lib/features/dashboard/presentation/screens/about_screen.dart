@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:share_plus/share_plus.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -8,10 +7,6 @@ class AboutScreen extends StatelessWidget {
   static const String appVersion = '1.6.8';
   static const String buildNumber = '68';
   static const String githubRepoUrl = 'https://github.com/Rokib3101/ms_smart_tools';
-
-  void _shareApp(BuildContext context) {
-    Share.share('Check out MS Smart Tools app on GitHub: $githubRepoUrl');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -153,22 +148,6 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Share App Button
-            ElevatedButton.icon(
-              onPressed: () => _shareApp(context),
-              icon: const Icon(Icons.share),
-              label: const Text('Share App'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            const SizedBox(height: 30),
-
             // App Version at Bottom
             FutureBuilder<PackageInfo>(
               future: PackageInfo.fromPlatform(),
@@ -210,7 +189,7 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              '© 2025 MS Smart Tools. All rights reserved.',
+              '© 2026 Rokib3101. All rights reserved.',
               style: TextStyle(
                 fontSize: 12,
                 color: theme.brightness == Brightness.dark

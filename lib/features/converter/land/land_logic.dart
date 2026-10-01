@@ -7,6 +7,12 @@ class LandLogic {
   static const double sqftPerAre = 1076.39; // 1 Are = 100 sqm
   static const double sqftPerHectare = 107639.1; // 1 Hectare = 10,000 sqm
   static const double sqftPerSqm = 10.7639;
+  static const double sqftPerSqMi = 27878400.0;
+  static const double sqftPerSqKm = 10763910.4;
+  static const double sqftPerSqYd = 9.0;
+  static const double sqftPerSqIn = 1.0 / 144.0;
+  static const double sqftPerSqCm = 0.00107639;
+  static const double sqftPerSqMm = 0.0000107639;
 
   static Map<String, double> convert(double value, String fromUnit, {double kaniDecimal = 40.0}) {
     double sqft = 0;
@@ -21,19 +27,31 @@ class LandLogic {
       case 'are': sqft = value * sqftPerAre; break;
       case 'hectare': sqft = value * sqftPerHectare; break;
       case 'sqm': sqft = value * sqftPerSqm; break;
+      case 'sq_mi': sqft = value * sqftPerSqMi; break;
+      case 'sq_km': sqft = value * sqftPerSqKm; break;
+      case 'sq_yd': sqft = value * sqftPerSqYd; break;
+      case 'sq_in': sqft = value * sqftPerSqIn; break;
+      case 'sq_cm': sqft = value * sqftPerSqCm; break;
+      case 'sq_mm': sqft = value * sqftPerSqMm; break;
       case 'kani': sqft = value * (kaniDecimal * sqftPerDecimal); break;
     }
 
-    // Convert sqft to all other units
+    // Convert sqft to all other units (ordered from largest to smallest)
     return {
-      'sqft': sqft,
-      'decimal': sqft / sqftPerDecimal,
-      'katha': sqft / sqftPerKatha,
-      'bigha': sqft / sqftPerBigha,
-      'acre': sqft / sqftPerAcre,
-      'are': sqft / sqftPerAre,
+      'sq_mi': sqft / sqftPerSqMi,
+      'sq_km': sqft / sqftPerSqKm,
       'hectare': sqft / sqftPerHectare,
+      'acre': sqft / sqftPerAcre,
+      'bigha': sqft / sqftPerBigha,
+      'are': sqft / sqftPerAre,
+      'katha': sqft / sqftPerKatha,
+      'decimal': sqft / sqftPerDecimal,
       'sqm': sqft / sqftPerSqm,
+      'sq_yd': sqft / sqftPerSqYd,
+      'sqft': sqft,
+      'sq_in': sqft / sqftPerSqIn,
+      'sq_cm': sqft / sqftPerSqCm,
+      'sq_mm': sqft / sqftPerSqMm,
     };
   }
 

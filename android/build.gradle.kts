@@ -7,7 +7,9 @@ allprojects {
 
 rootProject.layout.buildDirectory.set(file("${project.projectDir}/../build"))
 subprojects {
-    project.layout.buildDirectory.set(file("${rootProject.layout.buildDirectory.get()}/${project.name}"))
+    if (project.projectDir.path.startsWith(rootProject.projectDir.path)) {
+        project.layout.buildDirectory.set(file("${rootProject.layout.buildDirectory.get()}/${project.name}"))
+    }
 }
 
 subprojects {
@@ -16,8 +18,4 @@ subprojects {
 
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
-}
-
-subprojects {
-    // Relying on kotlin.jvm.target.validation.mode=warning in gradle.properties
 }

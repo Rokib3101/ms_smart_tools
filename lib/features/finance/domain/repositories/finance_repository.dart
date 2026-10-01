@@ -25,4 +25,11 @@ abstract class FinanceRepository {
   Future<void> permanentDeleteTransaction(Transaction tx);
   Future<void> emptyTrash();
   Future<void> clearAllTransactions();
+  Future<void> clearSelectiveData({
+    int? month,
+    int? year,
+    bool clearIncome = false,
+    bool clearExpense = false,
+    bool clearWallets = false,
+  });
 }

@@ -28,49 +28,28 @@ class SocialMediaScreen extends StatelessWidget {
       icon: Icons.code,
       iconColor: Color(0xFF24292E),
     ),
-    SocialMediaItem(
-      title: 'Facebook',
-      subtitle: 'Official Page (Link not set)',
-      url: null,
-      icon: Icons.facebook,
-      iconColor: Color(0xFF1877F2),
-    ),
-    SocialMediaItem(
-      title: 'YouTube',
-      subtitle: 'Channel (Link not set)',
-      url: null,
-      icon: Icons.video_library,
-      iconColor: Color(0xFFFF0000),
-    ),
-    SocialMediaItem(
-      title: 'Telegram',
-      subtitle: 'Community Group (Link not set)',
-      url: null,
-      icon: Icons.send,
-      iconColor: Color(0xFF0088CC),
-    ),
-    SocialMediaItem(
-      title: 'LinkedIn',
-      subtitle: 'Profile (Link not set)',
-      url: null,
-      icon: Icons.work,
-      iconColor: Color(0xFF0A66C2),
-    ),
-    SocialMediaItem(
-      title: 'Website',
-      subtitle: 'Official Website (Link not set)',
-      url: null,
-      icon: Icons.language,
-      iconColor: Color(0xFF00A86B),
-    ),
   ];
 
   Future<void> _handleTap(BuildContext context, SocialMediaItem item) async {
     if (item.url != null && item.url!.isNotEmpty) {
       final Uri uri = Uri.parse(item.url!);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
+      try {
+        bool launched = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+        if (!launched) {
+          launched = await launchUrl(
+            uri,
+            mode: LaunchMode.platformDefault,
+          );
+        }
+        if (!launched && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Could not open ${item.title} link')),
+          );
+        }
+      } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Could not open ${item.title} link')),

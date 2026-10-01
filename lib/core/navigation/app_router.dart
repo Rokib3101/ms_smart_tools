@@ -33,12 +33,12 @@ import '../../features/shopping_market/presentation/screens/unit_price_comparato
 // Cash counter & Calculators
 import '../../features/cash_counter/presentation/screens/cash_counter_screen.dart';
 import '../../features/calculators/basic_calculator/screens/calculator_screen.dart';
+import '../../features/calculators/basic_calculator/screens/converter_list_screen.dart';
 import '../../features/calculators/age_calculator/screens/age_calculator_screen.dart';
 import '../../features/calculators/bmi_calculator/screens/bmi_calculator_screen.dart';
 
 // Converters
-import '../../features/converter/unit_converter/screens/unit_converter_screen.dart';
-import '../../features/converter/unit_converter/screens/physics_converter_screen.dart';
+import '../../features/converter/screens/single_converter_screen.dart';
 
 // Utilities
 import '../../features/qr_tools/presentation/screens/qr_generator_screen.dart';
@@ -73,11 +73,19 @@ abstract class AppRoutes {
 
   static const String cashCounter = '/cash-counter';
   static const String calculator = '/calculator';
+  static const String converterList = '/converter-list';
   static const String ageCalc = '/age-calc';
   static const String bmiCalc = '/bmi-calc';
 
-  static const String unitConv = '/unit-conv';
-  static const String physicsConv = '/physics-conv';
+  static const String converterLength = '/converter/length';
+  static const String converterArea = '/converter/area';
+  static const String converterVolume = '/converter/volume';
+  static const String converterMass = '/converter/mass';
+  static const String converterTemp = '/converter/temp';
+  static const String converterTime = '/converter/time';
+  static const String converterSpeed = '/converter/speed';
+  static const String converterPressure = '/converter/pressure';
+  static const String converterEnergy = '/converter/energy';
 
   static const String qrScanner = '/qr-scanner';
   static const String qrGenerator = '/qr-generator';
@@ -187,6 +195,10 @@ class AppRouter {
         builder: (context, state) => const CalculatorScreen(),
       ),
       GoRoute(
+        path: AppRoutes.converterList,
+        builder: (context, state) => const ConverterListScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.ageCalc,
         builder: (context, state) => const AgeCalculatorScreen(),
       ),
@@ -197,12 +209,40 @@ class AppRouter {
 
       // Converters
       GoRoute(
-        path: AppRoutes.unitConv,
-        builder: (context, state) => const UnitConverterScreen(),
+        path: AppRoutes.converterLength,
+        builder: (context, state) => const SingleConverterScreen(type: 'length'),
       ),
       GoRoute(
-        path: AppRoutes.physicsConv,
-        builder: (context, state) => const PhysicsConverterScreen(),
+        path: AppRoutes.converterArea,
+        builder: (context, state) => const SingleConverterScreen(type: 'area'),
+      ),
+      GoRoute(
+        path: AppRoutes.converterVolume,
+        builder: (context, state) => const SingleConverterScreen(type: 'volume'),
+      ),
+      GoRoute(
+        path: AppRoutes.converterMass,
+        builder: (context, state) => const SingleConverterScreen(type: 'mass'),
+      ),
+      GoRoute(
+        path: AppRoutes.converterTemp,
+        builder: (context, state) => const SingleConverterScreen(type: 'temp'),
+      ),
+      GoRoute(
+        path: AppRoutes.converterTime,
+        builder: (context, state) => const SingleConverterScreen(type: 'time'),
+      ),
+      GoRoute(
+        path: AppRoutes.converterSpeed,
+        builder: (context, state) => const SingleConverterScreen(type: 'speed'),
+      ),
+      GoRoute(
+        path: AppRoutes.converterPressure,
+        builder: (context, state) => const SingleConverterScreen(type: 'pressure'),
+      ),
+      GoRoute(
+        path: AppRoutes.converterEnergy,
+        builder: (context, state) => const SingleConverterScreen(type: 'energy'),
       ),
 
       // Utilities

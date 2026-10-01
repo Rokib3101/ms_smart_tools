@@ -188,10 +188,90 @@ class HiveFinanceRepository implements FinanceRepository {
   }
 
   @override
-  Future<void> clearAllTransactions() async {
-    await _transactionBox.clear();
-    for (var w in _walletBox.values) {
-      await _walletBox.put(w.id, w.copyWith(balance: 0));
+  Future<void> clearSelectiveData({
+    int? month,
+    int? year,
+    bool clearIncome = false,
+    bool clearExpense = false,
+    bool clearWallets = false,
+  }) async {
+    final allTransactions = _transactionBox.values.toList();
+    List<Transaction> targetsToDelete = [];
+
+    for (var tx in allTransactions) {
+      bool matchesMonth = (month == null || year == null) ||
+          (tx.date.month == month && tx.date.year == year);
+
+      if (!matchesMonth) continue;
+
+      if (tx.type == TransactionType.income && clearIncome) {
+        targetsToDelete.add(tx);
+      } else if (tx.type == TransactionType.expense && clearExpense) {
+        targetsToDelete.add(tx);
+      } else if (tx.type == TransactionType.transfer && clearWallets) {
+        targetsToDelete.add(tx);
+      }
     }
+
+    for (var tx in targetsToDelete) {
+      if (!clearWallets && !tx.isDeleted) {
+        if (tx.type == TransactionType.transfer && tx.toWalletId != null) {
+          final fromWallet = _walletBox.get(tx.walletId);
+          final toWallet = _walletBox.get(tx.toWalletId!);
+          if (fromWallet != null && toWallet != null) {
+            await _walletBox.put(
+              tx.walletId,
+              fromWallet.copyWith(balance: fromWallet.balance + tx.amount),
+            );
+            await _walletBox.put(
+              tx.toWalletId!,
+              toWallet.copyWith(balance: toWallet.balance - tx.amount),
+            );
+          }
+        } else {
+          final wallet = _walletBox.get(tx.walletId);
+          if (wallet != null) {
+            if (tx.type == TransactionType.income) {
+              await _walletBox.put(
+                tx.walletId,
+                wallet.copyWith(balance: wallet.balance - tx.amount),
+              );
+            } else if (tx.type == TransactionType.expense) {
+              await _walletBox.put(
+                tx.walletId,
+                wallet.copyWith(balance: wallet.balance + tx.amount),
+              );
+            }
+          }
+        }
+      }
+
+      if (tx.isInBox) {
+        await tx.delete();
+      } else {
+        final key = _transactionBox.keys.firstWhere(
+          (k) => _transactionBox.get(k)?.id == tx.id,
+          orElse: () => null,
+        );
+        if (key != null) {
+          await _transactionBox.delete(key);
+        }
+      }
+    }
+
+    if (clearWallets) {
+      for (var w in _walletBox.values) {
+        await _walletBox.put(w.id, w.copyWith(balance: 0));
+      }
+    }
+  }
+
+  @override
+  Future<void> clearAllTransactions() async {
+    await clearSelectiveData(
+      clearIncome: true,
+      clearExpense: true,
+      clearWallets: true,
+    );
   }
 }

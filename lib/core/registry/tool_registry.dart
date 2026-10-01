@@ -14,8 +14,7 @@ import '../../features/qr_tools/presentation/screens/qr_generator_screen.dart';
 import '../../features/qr_tools/presentation/screens/qr_scanner_screen.dart';
 import '../../features/shopping_market/presentation/screens/unit_price_comparator_screen.dart';
 import '../../features/shopping_market/presentation/screens/shopping_list_screen.dart';
-import '../../features/converter/unit_converter/screens/unit_converter_screen.dart';
-import '../../features/converter/unit_converter/screens/physics_converter_screen.dart';
+import '../../features/converter/screens/single_converter_screen.dart';
 import '../../features/image_tools/presentation/screens/image_merge_screen.dart';
 import '../../features/image_tools/presentation/screens/image_overlay_screen.dart';
 import '../../features/scanner/presentation/screens/scanner_home_screen.dart';
@@ -110,30 +109,114 @@ class ToolRegistry {
       analyticsEventName: 'tool_open_bmi_calc',
     ),
 
-    // Converters
+    // Converters (after BMI Calculator)
     const SmartTool(
-      id: 'unit_conv',
-      titleBn: 'Unit Converter',
-      titleEn: 'Unit Converter',
+      id: 'converter_length',
+      titleBn: 'Length',
+      titleEn: 'Length',
       category: ToolCategory.converter,
-      icon: Icons.square_foot,
-      color: Colors.teal,
-      keywords: ['unit', 'land', 'length', 'weight', 'liquid', 'time', 'converter', 'area', 'decimal', 'kg', 'liter', 'foot', 'hour'],
-      screen: UnitConverterScreen(),
-      route: '/unit-conv',
-      analyticsEventName: 'tool_open_unit_conv',
+      icon: Icons.straighten,
+      color: Colors.deepOrange,
+      keywords: ['length', 'meter', 'km', 'feet', 'inch', 'converter'],
+      screen: SingleConverterScreen(type: 'length'),
+      route: '/converter/length',
+      analyticsEventName: 'tool_open_converter_length',
     ),
     const SmartTool(
-      id: 'physics_conv',
-      titleBn: 'Physics Converter',
-      titleEn: 'Physics Converter',
+      id: 'converter_area',
+      titleBn: 'Area',
+      titleEn: 'Area',
+      category: ToolCategory.converter,
+      icon: Icons.square_foot,
+      color: Colors.green,
+      keywords: ['area', 'land', 'decimal', 'katha', 'bigha', 'acre', 'converter'],
+      screen: SingleConverterScreen(type: 'area'),
+      route: '/converter/area',
+      analyticsEventName: 'tool_open_converter_area',
+    ),
+    const SmartTool(
+      id: 'converter_volume',
+      titleBn: 'Volume',
+      titleEn: 'Volume',
+      category: ToolCategory.converter,
+      icon: Icons.opacity,
+      color: Colors.pink,
+      keywords: ['volume', 'liquid', 'liter', 'ml', 'gallon', 'converter'],
+      screen: SingleConverterScreen(type: 'volume'),
+      route: '/converter/volume',
+      analyticsEventName: 'tool_open_converter_volume',
+    ),
+    const SmartTool(
+      id: 'converter_mass',
+      titleBn: 'Mass',
+      titleEn: 'Mass',
+      category: ToolCategory.converter,
+      icon: Icons.scale,
+      color: Colors.indigo,
+      keywords: ['mass', 'weight', 'kg', 'gram', 'pound', 'ton', 'converter'],
+      screen: SingleConverterScreen(type: 'mass'),
+      route: '/converter/mass',
+      analyticsEventName: 'tool_open_converter_mass',
+    ),
+    const SmartTool(
+      id: 'converter_temp',
+      titleBn: 'Temperature',
+      titleEn: 'Temperature',
+      category: ToolCategory.converter,
+      icon: Icons.thermostat,
+      color: Colors.orange,
+      keywords: ['temperature', 'celsius', 'fahrenheit', 'kelvin', 'converter'],
+      screen: SingleConverterScreen(type: 'temp'),
+      route: '/converter/temp',
+      analyticsEventName: 'tool_open_converter_temp',
+    ),
+    const SmartTool(
+      id: 'converter_time',
+      titleBn: 'Time',
+      titleEn: 'Time',
+      category: ToolCategory.converter,
+      icon: Icons.timer,
+      color: Colors.blue,
+      keywords: ['time', 'second', 'minute', 'hour', 'day', 'year', 'converter'],
+      screen: SingleConverterScreen(type: 'time'),
+      route: '/converter/time',
+      analyticsEventName: 'tool_open_converter_time',
+    ),
+    const SmartTool(
+      id: 'converter_speed',
+      titleBn: 'Speed',
+      titleEn: 'Speed',
       category: ToolCategory.converter,
       icon: Icons.speed,
       color: Colors.red,
-      keywords: ['speed', 'temperature', 'pressure', 'power', 'physics', 'data', 'energy', 'mb', 'gb', 'calorie', 'joule'],
-      screen: PhysicsConverterScreen(),
-      route: '/physics-conv',
-      analyticsEventName: 'tool_open_physics_conv',
+      keywords: ['speed', 'kmh', 'ms', 'mph', 'converter'],
+      screen: SingleConverterScreen(type: 'speed'),
+      route: '/converter/speed',
+      analyticsEventName: 'tool_open_converter_speed',
+    ),
+    const SmartTool(
+      id: 'converter_pressure',
+      titleBn: 'Pressure',
+      titleEn: 'Pressure',
+      category: ToolCategory.converter,
+      icon: Icons.compress,
+      color: Colors.purple,
+      keywords: ['pressure', 'pa', 'bar', 'psi', 'converter'],
+      screen: SingleConverterScreen(type: 'pressure'),
+      route: '/converter/pressure',
+      analyticsEventName: 'tool_open_converter_pressure',
+    ),
+    const SmartTool(
+      id: 'converter_energy',
+      titleBn: 'Energy',
+      titleEn: 'Energy',
+      category: ToolCategory.converter,
+      icon: Icons.electric_bolt,
+      color: Colors.indigo,
+      keywords: ['energy', 'power', 'watt', 'joule', 'calorie', 'kwh', 'converter'],
+      screen: SingleConverterScreen(type: 'energy'),
+      route: '/converter/energy',
+      analyticsEventName: 'tool_open_converter_energy',
     ),
 
     // Utilities
@@ -204,6 +287,26 @@ class ToolRegistry {
       analyticsEventName: 'tool_open_image_overlay',
     ),
   ];
+
+  static const Set<String> triangleToolIds = {
+    'age_calc',
+    'bmi_calc',
+    'converter_length',
+    'converter_area',
+    'converter_volume',
+    'converter_mass',
+    'converter_temp',
+    'converter_time',
+    'converter_speed',
+    'converter_pressure',
+    'converter_energy',
+  };
+
+  static List<SmartTool> get mainMenuTools =>
+      allTools.where((t) => !triangleToolIds.contains(t.id)).toList();
+
+  static List<SmartTool> get triangleTools =>
+      allTools.where((t) => triangleToolIds.contains(t.id)).toList();
 
   static SmartTool? getById(String id) {
     try {

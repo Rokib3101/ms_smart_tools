@@ -9,6 +9,8 @@ class TimeLogic {
   static const double secondsPerDay = 86400.0;
   static const double secondsPerHour = 3600.0;
   static const double secondsPerMinute = 60.0;
+  static const double secondsPerSecond = 1.0;
+  static const double secondsPerMs = 0.001;
 
   static Map<String, double> convertTime(double value, String fromUnit) {
     double s = 0;
@@ -23,7 +25,8 @@ class TimeLogic {
       case 'day': s = value * secondsPerDay; break;
       case 'hour': s = value * secondsPerHour; break;
       case 'minute': s = value * secondsPerMinute; break;
-      case 'second': s = value; break;
+      case 'second': s = value * secondsPerSecond; break;
+      case 'ms': s = value * secondsPerMs; break;
     }
 
     return {
@@ -37,7 +40,8 @@ class TimeLogic {
       'day': s / secondsPerDay,
       'hour': s / secondsPerHour,
       'minute': s / secondsPerMinute,
-      'second': s,
+      'second': s / secondsPerSecond,
+      'ms': s / secondsPerMs,
     };
   }
 }

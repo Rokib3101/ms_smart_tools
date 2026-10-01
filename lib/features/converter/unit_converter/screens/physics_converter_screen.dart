@@ -54,9 +54,12 @@ class _PhysicsTabState extends State<_PhysicsTab> {
 
   final Map<String, Map<String, String>> _unitData = {
     'speed': {
-      'kmh': 'km/h',
-      'ms': 'm/s',
-      'mph': 'mph',
+      'c': 'Speed of light (c)',
+      'kms': 'Kilometer per second (km/s)',
+      'ms': 'Meter per second (m/s)',
+      'kn': 'Knot (kn)',
+      'mph': 'Mile per hour (mph)',
+      'kmh': 'Kilometer per hour (km/h)',
     },
     'temp': {
       'c': 'Celsius (°C)',
@@ -64,9 +67,13 @@ class _PhysicsTabState extends State<_PhysicsTab> {
       'k': 'Kelvin (K)',
     },
     'pressure': {
+      'atm': 'Atmosphere (atm)',
+      'bar': 'Bar (bar)',
+      'psi': 'Pounds per square inch (PSI)',
+      'inhg': 'Inch of mercury (inHg)',
+      'mmhg': 'Millimeter of mercury (mmHg)',
+      'mbar': 'Millibar (mbar)',
       'pa': 'Pascal (Pa)',
-      'bar': 'Bar',
-      'psi': 'PSI',
     },
     'power': {
       'w': 'Watt (W)',
@@ -74,19 +81,21 @@ class _PhysicsTabState extends State<_PhysicsTab> {
       'hp': 'Horsepower (HP)',
     },
     'data': {
-      'bit': 'Bit',
-      'b': 'Byte',
+      'bit': 'Bit (bit)',
+      'b': 'Byte (B)',
       'kb': 'Kilobyte (KB)',
       'mb': 'Megabyte (MB)',
       'gb': 'Gigabyte (GB)',
       'tb': 'Terabyte (TB)',
     },
     'energy': {
-      'j': 'Joule (J)',
-      'cal': 'Calorie (cal)',
-      'kcal': 'Kilocalorie (kcal)',
-      'btu': 'BTU',
+      'mwh': 'Megawatt hour (MWh)',
       'kwh': 'Kilowatt Hour (kWh)',
+      'kcal': 'Kilocalorie (kcal)',
+      'btu': 'British Thermal Unit (BTU)',
+      'kj': 'Kilojoule (kJ)',
+      'cal': 'Calorie (cal)',
+      'j': 'Joule (J)',
       'ev': 'Electron Volt (eV)',
     },
   };

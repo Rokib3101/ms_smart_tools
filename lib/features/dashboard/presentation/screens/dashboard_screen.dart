@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'dart:async';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import '../../../../core/registry/tool_registry.dart';
@@ -9,6 +8,7 @@ import '../../../../core/registry/smart_tool_model.dart';
 import '../../../../core/registry/tool_provider.dart';
 import '../../../../core/security/app_lock_service.dart';
 import '../../../../core/navigation/app_router.dart';
+import '../../../../core/ui/app_more_menu.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -61,28 +61,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  void _handleMenuSelection(String value) {
-    switch (value) {
-      case 'about':
-        context.push(AppRoutes.about);
-        break;
-      case 'social_media':
-        context.push(AppRoutes.socialMedia);
-        break;
-      case 'share_app':
-        Share.share(
-          'Check out MS Smart Tools app on GitHub: https://github.com/Rokib3101/ms_smart_tools',
-        );
-        break;
-      case 'privacy_policy':
-        context.push(AppRoutes.privacyPolicy);
-        break;
-      case 'settings':
-        context.push(AppRoutes.settings);
-        break;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,69 +70,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert),
-            tooltip: 'Menu',
-            onSelected: _handleMenuSelection,
-            itemBuilder: (context) => [
-              const PopupMenuItem<String>(
-                value: 'about',
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, size: 20),
-                    SizedBox(width: 12),
-                    Text('About'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'social_media',
-                child: Row(
-                  children: [
-                    Icon(Icons.public, size: 20),
-                    SizedBox(width: 12),
-                    Text('Social Media'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'share_app',
-                child: Row(
-                  children: [
-                    Icon(Icons.share_outlined, size: 20),
-                    SizedBox(width: 12),
-                    Text('Share App'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'privacy_policy',
-                child: Row(
-                  children: [
-                    Icon(Icons.privacy_tip_outlined, size: 20),
-                    SizedBox(width: 12),
-                    Text('Privacy Policy'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'settings',
-                child: Row(
-                  children: [
-                    Icon(Icons.settings_outlined, size: 20),
-                    SizedBox(width: 12),
-                    Text('Settings'),
-                  ],
-                ),
-              ),
-            ],
-          ),
+        actions: const [
+          AppMoreMenuButton(),
         ],
       ),
       body: Consumer<ToolProvider>(
         builder: (context, toolProvider, child) {
-          final allTools = ToolRegistry.allTools;
+          final allTools = ToolRegistry.mainMenuTools;
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(

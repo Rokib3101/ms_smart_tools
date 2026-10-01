@@ -10,10 +10,12 @@ class WeightVolumeLogic {
   // Volume factors relative to Milliliter (ml)
   static const double mlPerMegaliter = 1000000000.0;
   static const double mlPerLiter = 1000.0;
+  static const double mlPerBarrelUs = 119240.4712;
   static const double mlPerGallon = 3785.41;
   static const double mlPerQuart = 946.353;
   static const double mlPerPint = 473.176;
   static const double mlPerFloz = 29.5735;
+  static const double mlPerCubicInch = 16.387064;
   static const double mlPerTsp = 4.92892;
   static const double mlPerTbsp = 14.7868;
   static const double mlPerCup = 240.0;
@@ -53,8 +55,8 @@ class WeightVolumeLogic {
       'kg': g / 1000.0,
       'lb': g / gPerPound,
       'hg': g / 100.0,
-      'oz': g / gPerOunce,
       'dag': g / 10.0,
+      'oz': g / gPerOunce,
       'g': g,
       'dg': g / 0.1,
       'cg': g / 0.01,
@@ -69,28 +71,40 @@ class WeightVolumeLogic {
     switch (fromUnit) {
       case 'kl': ml = value * literPerKl * mlPerLiter; break;
       case 'hl': ml = value * literPerHl * mlPerLiter; break;
+      case 'barrel_us': ml = value * mlPerBarrelUs; break;
       case 'dal': ml = value * literPerDal * mlPerLiter; break;
       case 'gallon': ml = value * mlPerGallon; break;
       case 'liter': ml = value * mlPerLiter; break;
+      case 'quart': ml = value * mlPerQuart; break;
+      case 'pint': ml = value * mlPerPint; break;
       case 'cup': ml = value * mlPerCup; break;
       case 'dl': ml = value * literPerDl * mlPerLiter; break;
+      case 'floz': ml = value * mlPerFloz; break;
+      case 'cubic_inch': ml = value * mlPerCubicInch; break;
       case 'tbsp': ml = value * mlPerTbsp; break;
       case 'cl': ml = value * literPerCl * mlPerLiter; break;
       case 'tsp': ml = value * mlPerTsp; break;
       case 'ml': ml = value; break;
+      case 'ul': ml = value * mlPerUl; break;
     }
     return {
       'kl': ml / (literPerKl * mlPerLiter),
       'hl': ml / (literPerHl * mlPerLiter),
+      'barrel_us': ml / mlPerBarrelUs,
       'dal': ml / (literPerDal * mlPerLiter),
       'gallon': ml / mlPerGallon,
       'liter': ml / mlPerLiter,
+      'quart': ml / mlPerQuart,
+      'pint': ml / mlPerPint,
       'cup': ml / mlPerCup,
       'dl': ml / (literPerDl * mlPerLiter),
+      'floz': ml / mlPerFloz,
+      'cubic_inch': ml / mlPerCubicInch,
       'tbsp': ml / mlPerTbsp,
       'cl': ml / (literPerCl * mlPerLiter),
       'tsp': ml / mlPerTsp,
       'ml': ml,
+      'ul': ml / mlPerUl,
     };
   }
 }

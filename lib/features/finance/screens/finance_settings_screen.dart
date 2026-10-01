@@ -5,6 +5,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:ms_smart_tools/features/finance/presentation/providers/finance_provider.dart';
+import 'package:ms_smart_tools/features/finance/data/models/finance_models.dart';
+import 'package:ms_smart_tools/features/finance/presentation/providers/asset_provider.dart';
 import 'package:ms_smart_tools/core/security/app_lock_service.dart';
 import 'package:ms_smart_tools/core/security/app_lock_screen.dart';
 import 'package:ms_smart_tools/core/services/backup_restore_service.dart';
@@ -176,8 +178,8 @@ class _FinanceSettingsScreenState extends State<FinanceSettingsScreen> {
               const Divider(),
               _buildSettingsItem(
                 context,
-                'Clear Transaction Data',
-                'Delete all transaction data and reset balances.',
+                'Clear Transaction Data (ডাটা মোছা)',
+                'মাস নির্বাচন করে আয়, ব্যয় বা ওয়ালেট ডাটা ডিলিট করুন।',
                 Icons.delete_forever,
                 iconColor: Colors.red,
                 onTap: () => _showClearDataConfirmation(context, provider),
@@ -526,6 +528,8 @@ class _FinanceSettingsScreenState extends State<FinanceSettingsScreen> {
                   const Divider(height: 16),
                   _buildSummaryRow(Icons.account_balance_wallet, 'ওয়ালেট/অ্যাকাউন্ট:', '${summary.walletCount} টি'),
                   const Divider(height: 16),
+                  _buildSummaryRow(Icons.savings_outlined, 'অ্যাসেট সংখ্যা:', '${summary.assetCount} টি'),
+                  const Divider(height: 16),
                   _buildSummaryRow(Icons.receipt_long, 'মোট ট্রানজেকশন:', '${summary.transactionCount} টি'),
                   const Divider(height: 16),
                   _buildSummaryRow(Icons.history, 'সর্বশেষ ডাটা পরিধি:', latestDataDateStr),
@@ -571,6 +575,9 @@ class _FinanceSettingsScreenState extends State<FinanceSettingsScreen> {
               final success = await BackupRestoreService.restoreFromJson(filePath);
               if (success) {
                 provider.reloadData();
+                if (context.mounted) {
+                  Provider.of<AssetProvider>(context, listen: false).loadAssets();
+                }
               }
               setState(() => _isLoading = false);
 
@@ -608,26 +615,254 @@ class _FinanceSettingsScreenState extends State<FinanceSettingsScreen> {
   }
 
   void _showClearDataConfirmation(BuildContext context, FinanceProvider provider) {
+    final allMonthsOption = MonthYearOption(month: null, year: null, label: 'সকল মাস (All Months)');
+
+    final monthYearSet = <String>{};
+    final monthYearList = <MonthYearOption>[allMonthsOption];
+
+    final now = DateTime.now();
+    final currentKey = '${now.year}-${now.month}';
+    monthYearSet.add(currentKey);
+
+    final allTx = [...provider.transactions, ...provider.trashedTransactions];
+    for (var tx in allTx) {
+      final key = '${tx.date.year}-${tx.date.month}';
+      monthYearSet.add(key);
+    }
+
+    final sortedKeys = monthYearSet.toList()..sort((a, b) {
+      final partsA = a.split('-').map(int.parse).toList();
+      final partsB = b.split('-').map(int.parse).toList();
+      if (partsB[0] != partsA[0]) return partsB[0].compareTo(partsA[0]);
+      return partsB[1].compareTo(partsA[1]);
+    });
+
+    for (var key in sortedKeys) {
+      final parts = key.split('-').map(int.parse).toList();
+      final year = parts[0];
+      final month = parts[1];
+      final label = '${_getBengaliMonthName(month)} $year';
+      monthYearList.add(MonthYearOption(month: month, year: year, label: label));
+    }
+
+    MonthYearOption selectedOption = allMonthsOption;
+    bool clearIncome = false;
+    bool clearExpense = false;
+    bool clearWallets = false;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Warning'),
-        content: const Text('Are you sure you want to clear all transaction data? This action cannot be undone.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('No')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            onPressed: () {
-              provider.clearAllTransactions();
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('All data has been cleared')),
-              );
-            },
-            child: const Text('Yes, Clear All'),
-          ),
-        ],
-      ),
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final filteredIncomeCount = allTx.where((tx) {
+              if (tx.isDeleted) return false;
+              if (tx.type != TransactionType.income) return false;
+              if (selectedOption.month == null || selectedOption.year == null) return true;
+              return tx.date.month == selectedOption.month && tx.date.year == selectedOption.year;
+            }).length;
+
+            final filteredExpenseCount = allTx.where((tx) {
+              if (tx.isDeleted) return false;
+              if (tx.type != TransactionType.expense) return false;
+              if (selectedOption.month == null || selectedOption.year == null) return true;
+              return tx.date.month == selectedOption.month && tx.date.year == selectedOption.year;
+            }).length;
+
+            final isAnySelected = clearIncome || clearExpense || clearWallets;
+
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Row(
+                children: [
+                  Icon(Icons.delete_forever, color: Colors.red, size: 28),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'ডাটা মুছে ফেলুন',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                  ),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'নিচে মাস নির্বাচন করুন এবং যে ডাটাগুলো ডিলিট করতে চান তা নির্বাচন করুন:',
+                      style: TextStyle(fontSize: 13, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'মাস নির্বাচন:',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<MonthYearOption>(
+                          isExpanded: true,
+                          value: selectedOption,
+                          items: monthYearList.map((opt) {
+                            return DropdownMenuItem<MonthYearOption>(
+                              value: opt,
+                              child: Text(
+                                opt.label,
+                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setDialogState(() {
+                                selectedOption = val;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(height: 1),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'ডিলিট করার ক্যাটাগরি:',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 8),
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      activeColor: Colors.red,
+                      title: const Text('আয়ের হিস্ট্রি (Income History)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                      subtitle: Text('$filteredIncomeCount টি আয়ের লেনদেন চিহ্নিত', style: const TextStyle(fontSize: 11.5, color: Colors.grey)),
+                      value: clearIncome,
+                      onChanged: (val) {
+                        setDialogState(() => clearIncome = val ?? false);
+                      },
+                    ),
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      activeColor: Colors.red,
+                      title: const Text('ব্যয়ের হিস্ট্রি (Expense History)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                      subtitle: Text('$filteredExpenseCount টি ব্যয়ের লেনদেন চিহ্নিত', style: const TextStyle(fontSize: 11.5, color: Colors.grey)),
+                      value: clearExpense,
+                      onChanged: (val) {
+                        setDialogState(() => clearExpense = val ?? false);
+                      },
+                    ),
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      activeColor: Colors.red,
+                      title: const Text('ওয়ালেট ডাটা (Wallet Data)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                      subtitle: const Text('ওয়ালেটের ব্যালেন্স ও ডাটা রিসেট হবে', style: TextStyle(fontSize: 11.5, color: Colors.grey)),
+                      value: clearWallets,
+                      onChanged: (val) {
+                        setDialogState(() => clearWallets = val ?? false);
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.warning_amber_rounded, color: Colors.red, size: 18),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'সতর্কতা: ডিলিট করা ডাটা পরবর্তীতে আর ফিরে পাওয়া যাবে না।',
+                              style: TextStyle(fontSize: 11, color: Colors.red, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('বাতিল'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isAnySelected ? Colors.red : Colors.grey,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: isAnySelected
+                      ? () async {
+                          Navigator.pop(dialogContext);
+                          await provider.clearSelectiveData(
+                            month: selectedOption.month,
+                            year: selectedOption.year,
+                            clearIncome: clearIncome,
+                            clearExpense: clearExpense,
+                            clearWallets: clearWallets,
+                          );
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('নির্বাচিত ডাটা সফলভাবে মুছে ফেলা হয়েছে')),
+                            );
+                          }
+                        }
+                      : null,
+                  child: const Text('ডিলিট করুন'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
+
+  String _getBengaliMonthName(int month) {
+    const months = [
+      'জানুয়ারি',
+      'ফেব্রুয়ারি',
+      'মার্চ',
+      'এপ্রিল',
+      'মে',
+      'জুন',
+      'জুলাই',
+      'আগস্ট',
+      'সেপ্টেম্বর',
+      'অক্টোবর',
+      'নভেম্বর',
+      'ডিসেম্বর'
+    ];
+    return months[(month - 1) % 12];
+  }
+}
+
+class MonthYearOption {
+  final int? month;
+  final int? year;
+  final String label;
+
+  MonthYearOption({this.month, this.year, required this.label});
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MonthYearOption &&
+          runtimeType == other.runtimeType &&
+          month == other.month &&
+          year == other.year;
+
+  @override
+  int get hashCode => month.hashCode ^ year.hashCode;
 }

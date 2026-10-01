@@ -1,9 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ms_smart_tools/core/utils/math_evaluator.dart';
+import 'package:ms_smart_tools/core/services/backup_restore_service.dart';
 import 'package:ms_smart_tools/features/finance/data/models/finance_models.dart';
 import 'package:ms_smart_tools/features/shopping_market/models/market_models.dart';
 import 'package:ms_smart_tools/features/calculators/basic_calculator/calculator_logic.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
+
   group('Finance Calculation Tests', () {
     test('Transaction creation and properties', () {
       final tx = Transaction.create(
@@ -222,6 +228,50 @@ void main() {
       expect(logic.expression, '5÷2');
       logic.evaluate();
       expect(logic.result, '2.5');
+    });
+  });
+
+  group('MathEvaluator Asset Expression Tests', () {
+    test('Relative addition and subtraction with baseValue', () {
+      expect(MathEvaluator.evaluate('+500', baseValue: 1000.0), 1500.0);
+      expect(MathEvaluator.evaluate('-200', baseValue: 1000.0), 800.0);
+      expect(MathEvaluator.evaluate('+ 1200', baseValue: 5000.0), 6200.0);
+      expect(MathEvaluator.evaluate('- 500', baseValue: 5000.0), 4500.0);
+    });
+
+    test('Full formula evaluation without baseValue override', () {
+      expect(MathEvaluator.evaluate('1000+500-200', baseValue: 1000.0), 1300.0);
+      expect(MathEvaluator.evaluate('500 * 3', baseValue: 0.0), 1500.0);
+      expect(MathEvaluator.evaluate('100 + 50 * 2', baseValue: 0.0), 200.0);
+    });
+
+    test('Bangla digits conversion and evaluation', () {
+      expect(MathEvaluator.evaluate('+ ৫০০', baseValue: 1000.0), 1500.0);
+      expect(MathEvaluator.evaluate('১০+২০', baseValue: 0.0), 30.0);
+    });
+
+    test('Number formatting without trailing decimals', () {
+      expect(MathEvaluator.formatNumber(1500.0), '1500');
+      expect(MathEvaluator.formatNumber(1500.50), '1500.5');
+      expect(MathEvaluator.formatNumber(1500.25), '1500.25');
+    });
+  });
+
+  group('BackupSummary Asset Integration Tests', () {
+    test('BackupSummary holds assetCount correctly', () {
+      final summary = BackupSummary(
+        transactionCount: 10,
+        trashedCount: 2,
+        walletCount: 3,
+        categoryCount: 5,
+        assetCount: 4,
+        version: 3,
+      );
+
+      expect(summary.transactionCount, 10);
+      expect(summary.walletCount, 3);
+      expect(summary.assetCount, 4);
+      expect(summary.version, 3);
     });
   });
 }

@@ -1,8 +1,14 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:ms_smart_tools/core/utils/core_utils.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/registry/smart_tool_model.dart';
+import '../../../../core/registry/tool_provider.dart';
+import '../../../../core/registry/tool_registry.dart';
+import '../../../../core/ui/app_more_menu.dart';
 import '../calculator_logic.dart';
 
 class CalculatorScreen extends StatefulWidget {
@@ -343,6 +349,10 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     );
   }
 
+  void _navigateToConverters() {
+    context.push('/converter-list');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -361,10 +371,16 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             tooltip: 'History',
           ),
           IconButton(
+            icon: const Icon(Icons.change_history, color: Colors.blue),
+            onPressed: _navigateToConverters,
+            tooltip: 'Triangle Convert',
+          ),
+          IconButton(
             icon: Icon(_showScientific ? Icons.science : Icons.science_outlined, color: Colors.blue),
             onPressed: () => setState(() => _showScientific = !_showScientific),
             tooltip: 'Scientific Mode',
           ),
+          const AppMoreMenuButton(),
         ],
       ),
       body: Column(
@@ -449,6 +465,18 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 contextMenuBuilder: (BuildContext context, EditableTextState editableTextState) {
                   final List<ContextMenuButtonItem> buttonItems = [
                     ContextMenuButtonItem(
+                      label: 'Select All',
+                      onPressed: () {
+                        if (_controller.text.isNotEmpty) {
+                          _controller.selection = TextSelection(
+                            baseOffset: 0,
+                            extentOffset: _controller.text.length,
+                          );
+                        }
+                        editableTextState.showToolbar();
+                      },
+                    ),
+                    ContextMenuButtonItem(
                       label: 'Copy',
                       onPressed: () {
                         editableTextState.hideToolbar();
@@ -523,7 +551,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       ['7', '8', '9', '×'],
       ['4', '5', '6', '-'],
       ['1', '2', '3', '+'],
-      ['⌫', '0', '.', '='],
+      ['0', '.', '⌫', '='],
     ];
 
     final List<List<String>> scientificRows = [
@@ -534,7 +562,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     ];
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 6, 10, 10),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
@@ -564,54 +592,50 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   }
 
   Widget _buildButton(String text, {bool isScientific = false}) {
-    bool isOperator = ['÷', '×', '-', '+', '=', 'AC', '( )', '⌫', '^', '!', '√', 'π', 'Deg', 'Rad', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'Inv', 'e', 'ln', 'log', 'eˣ', '10ˣ', 'x²', '%'].contains(text);
-    bool isAction = ['=', 'AC', '⌫'].contains(text);
-    bool isMainOperator = ['÷', '×', '-', '+'].contains(text);
+    bool isTopOrRightOperator = ['AC', '( )', '%', '÷', '×', '-', '+'].contains(text);
+    bool isEqual = (text == '=');
 
     Color bgColor;
     Color textColor;
 
-    if (text == '=') {
-      bgColor = Colors.blue[600]!;
+    if (isEqual) {
+      bgColor = const Color(0xFF634A64);
       textColor = Colors.white;
-    } else if (text == 'AC') {
-      bgColor = Colors.orange[100]!;
-      textColor = Colors.orange[900]!;
-    } else if (text == 'Inv' && _logic.isInverse) {
-      bgColor = Colors.indigo[600]!;
-      textColor = Colors.white;
-    } else if (isMainOperator) {
-      bgColor = Colors.blue[50]!;
-      textColor = Colors.blue[800]!;
+    } else if (isTopOrRightOperator) {
+      bgColor = const Color(0xFFDCE2FA);
+      textColor = const Color(0xFF0F1738);
     } else if (isScientific) {
-      bgColor = const Color(0xFF2E3B8B).withOpacity(0.12);
-      textColor = const Color(0xFF1E2667);
-    } else if (isOperator) {
-      bgColor = Colors.grey[100]!;
-      textColor = Colors.blueGrey[800]!;
+      bgColor = const Color(0xFFDCE2FA);
+      textColor = const Color(0xFF0F1738);
     } else {
-      bgColor = Colors.white;
-      textColor = Colors.black87;
+      bgColor = const Color(0xFFE5E5E5);
+      textColor = const Color(0xFF1E1E1E);
     }
 
     return Padding(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       child: Material(
         color: bgColor,
-        borderRadius: BorderRadius.circular(20),
-        elevation: isAction ? 2 : 0,
+        shape: const StadiumBorder(),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () => _onPressed(text),
-          borderRadius: BorderRadius.circular(20),
+          customBorder: const StadiumBorder(),
           child: Center(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: isScientific ? 17 : (isOperator ? 20 : 24),
-                fontWeight: isOperator ? FontWeight.bold : FontWeight.w500,
-                color: textColor,
-              ),
-            ),
+            child: text == '⌫'
+                ? Icon(
+                    Icons.backspace_outlined,
+                    size: isScientific ? 20 : 24,
+                    color: textColor,
+                  )
+                : Text(
+                    text,
+                    style: TextStyle(
+                      fontSize: isScientific ? 18 : (isTopOrRightOperator || text == 'AC' ? 22 : 26),
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
+                  ),
           ),
         ),
       ),

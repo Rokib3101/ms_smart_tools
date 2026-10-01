@@ -11,6 +11,7 @@ class BackupSummary {
   final int trashedCount;
   final int walletCount;
   final int categoryCount;
+  final int assetCount;
   final DateTime? latestTransactionDate;
   final DateTime? backupDate;
   final int version;
@@ -20,6 +21,7 @@ class BackupSummary {
     required this.trashedCount,
     required this.walletCount,
     required this.categoryCount,
+    required this.assetCount,
     this.latestTransactionDate,
     this.backupDate,
     this.version = 1,
@@ -27,15 +29,20 @@ class BackupSummary {
 }
 
 class BackupRestoreService {
-  // Export Finance Data to JSON (Version 2 with Soft Delete support)
+  static Future<Box> _getAssetBox() async {
+    return Hive.isBoxOpen('assets') ? Hive.box('assets') : await Hive.openBox('assets');
+  }
+
+  // Export Finance Data to JSON (Version 3 with Assets & Soft Delete support)
   static Future<String?> exportToJson() async {
     try {
       final txBox = Hive.box<Transaction>('transactions');
       final walletBox = Hive.box<Wallet>('wallets');
       final catBox = Hive.box<Category>('categories');
+      final assetBox = await _getAssetBox();
 
       final data = {
-        'version': 2,
+        'version': 3,
         'backupDate': DateTime.now().toIso8601String(),
         'transactions': txBox.values.map((t) => {
           'id': t.id,
@@ -60,6 +67,10 @@ class BackupRestoreService {
           'name': c.name,
           'type': c.type.index,
         }).toList(),
+        'assets': assetBox.values.map((a) {
+          if (a is Map) return Map<String, dynamic>.from(a);
+          return a;
+        }).toList(),
       };
 
       final jsonString = const JsonEncoder.withIndent('  ').convert(data);
@@ -78,15 +89,33 @@ class BackupRestoreService {
     }
   }
 
-  // Export Transactions to CSV
+  // Export Transactions & Assets to CSV
   static Future<String?> exportToCsv() async {
     try {
       final txBox = Hive.box<Transaction>('transactions');
+      final assetBox = await _getAssetBox();
       final buffer = StringBuffer();
+
+      buffer.writeln('--- TRANSACTIONS ---');
       buffer.writeln('ID,Amount,Type,Category,Date,WalletID,Note,IsDeleted');
 
       for (var t in txBox.values.where((t) => !t.isDeleted)) {
         buffer.writeln('"${t.id}",${t.amount},"${t.type.name}","${t.category}","${t.date.toIso8601String()}","${t.walletId}","${t.note.replaceAll('"', '""')}","${t.isDeleted}"');
+      }
+
+      if (assetBox.isNotEmpty) {
+        buffer.writeln();
+        buffer.writeln('--- ASSETS ---');
+        buffer.writeln('ID,Name,Amount,LastModified');
+        for (var a in assetBox.values) {
+          if (a is Map) {
+            final id = a['id']?.toString() ?? '';
+            final name = (a['name']?.toString() ?? '').replaceAll('"', '""');
+            final amount = (a['amount'] as num?)?.toDouble() ?? 0.0;
+            final lastModified = a['lastModified']?.toString() ?? '';
+            buffer.writeln('"$id","$name",$amount,"$lastModified"');
+          }
+        }
       }
 
       final dir = await getApplicationDocumentsDirectory();
@@ -127,7 +156,10 @@ class BackupRestoreService {
       if (decoded is! Map) return null;
       final Map<String, dynamic> data = Map<String, dynamic>.from(decoded);
 
-      if (!data.containsKey('transactions') && !data.containsKey('wallets') && !data.containsKey('categories')) {
+      if (!data.containsKey('transactions') &&
+          !data.containsKey('wallets') &&
+          !data.containsKey('categories') &&
+          !data.containsKey('assets')) {
         return null;
       }
 
@@ -135,6 +167,7 @@ class BackupRestoreService {
       final txs = data['transactions'] as List? ?? [];
       final wallets = data['wallets'] as List? ?? [];
       final categories = data['categories'] as List? ?? [];
+      final assets = data['assets'] as List? ?? [];
       final backupDateStr = data['backupDate'] as String?;
       final backupDate = backupDateStr != null ? DateTime.tryParse(backupDateStr) : null;
 
@@ -167,6 +200,7 @@ class BackupRestoreService {
         trashedCount: trashedCount,
         walletCount: wallets.length,
         categoryCount: categories.length,
+        assetCount: assets.length,
         latestTransactionDate: latestDate,
         backupDate: backupDate,
         version: version,
@@ -205,10 +239,12 @@ class BackupRestoreService {
       final txBox = Hive.box<Transaction>('transactions');
       final walletBox = Hive.box<Wallet>('wallets');
       final catBox = Hive.box<Category>('categories');
+      final assetBox = await _getAssetBox();
 
       await txBox.clear();
       await walletBox.clear();
       await catBox.clear();
+      await assetBox.clear();
 
       final txs = data['transactions'] as List? ?? [];
       for (var t in txs) {
@@ -266,6 +302,16 @@ class BackupRestoreService {
             type: TransactionType.values[(c['type'] as int?) ?? 0],
           );
           await catBox.put(category.id, category);
+        }
+      }
+
+      final assets = data['assets'] as List? ?? [];
+      for (var a in assets) {
+        if (a is Map) {
+          final id = a['id']?.toString() ?? '';
+          if (id.isNotEmpty) {
+            await assetBox.put(id, Map<String, dynamic>.from(a));
+          }
         }
       }
 

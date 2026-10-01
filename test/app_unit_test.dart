@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ms_smart_tools/features/finance/data/models/finance_models.dart';
+import 'package:ms_smart_tools/features/converter/land/land_logic.dart';
 
 void main() {
   group('Core Unit Tests - MS Smart Tools', () {
@@ -37,6 +38,33 @@ void main() {
       double bmi = weightKg / (heightM * heightM);
 
       expect(bmi.toStringAsFixed(1), '24.5');
+    });
+
+    test('LandLogic conversion and unit order test', () {
+      final results = LandLogic.convert(1.0, 'acre');
+      expect(results.containsKey('sq_mi'), true);
+      expect(results.containsKey('sq_km'), true);
+      expect(results.containsKey('sq_yd'), true);
+      expect(results.containsKey('sq_in'), true);
+      expect(results.containsKey('sq_cm'), true);
+      expect(results.containsKey('sq_mm'), true);
+
+      // Verify keys order (largest to smallest)
+      final keys = results.keys.toList();
+      expect(keys[0], 'sq_mi');
+      expect(keys[1], 'sq_km');
+      expect(keys[2], 'hectare');
+      expect(keys[3], 'acre');
+      expect(keys[4], 'bigha');
+      expect(keys[5], 'are');
+      expect(keys[6], 'katha');
+      expect(keys[7], 'decimal');
+      expect(keys[8], 'sqm');
+      expect(keys[9], 'sq_yd');
+      expect(keys[10], 'sqft');
+      expect(keys[11], 'sq_in');
+      expect(keys[12], 'sq_cm');
+      expect(keys[13], 'sq_mm');
     });
   });
 }

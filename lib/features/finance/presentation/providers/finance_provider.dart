@@ -90,6 +90,23 @@ class FinanceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> clearSelectiveData({
+    int? month,
+    int? year,
+    bool clearIncome = false,
+    bool clearExpense = false,
+    bool clearWallets = false,
+  }) async {
+    await _repository.clearSelectiveData(
+      month: month,
+      year: year,
+      clearIncome: clearIncome,
+      clearExpense: clearExpense,
+      clearWallets: clearWallets,
+    );
+    notifyListeners();
+  }
+
   void reloadData() {
     notifyListeners();
   }
